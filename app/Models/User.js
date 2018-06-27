@@ -31,6 +31,18 @@ class User extends Model {
   tokens () {
     return this.hasMany('App/Models/Token')
   }
+
+  /**
+   * This makes sure that whenever we get an user from
+   * the database, the password field is always hidden.
+   * 
+   * @method hidden
+   * 
+   * @returns {Array}
+   */
+  static get hidden () {
+    return ['password']
+  }
 }
 
 module.exports = User
