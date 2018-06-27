@@ -14,17 +14,32 @@ class BaseController {
     this.possibleSortDirections = ['asc', 'desc']
     this.defaultSort = { sort: 'id' , direction: 'asc' }
   }
-
+  
+  /**
+   * Validates an entity against the current rules.
+   * 
+   * @param {*} entity Entity to be validated
+   */
   async validate (entity) {
     return await validateAll(entity, this.rules)
   }
 
+  /**
+   * Gets the paging information from the request
+   * 
+   * @param {*} request The request to get the paging from
+   */
   getPageable (request) {
     const page = request.get()['page']
     const size = request.get()['size']
     return page && size ? { page, size } : null
   }
 
+  /**
+   * Gets the sorting information from the request
+   * 
+   * @param {*} request The request to get the sorting from
+   */
   getSortable (request) {
     const sort = request.get()['sort']
     const direction = request.get()['direction']
@@ -34,6 +49,15 @@ class BaseController {
       this.defaultSort
   }
 
+  /**
+   * Lists all the elements of the given model.
+   * Applies paging and sorting if the request
+   * contains the page and sort strings.
+   * Applies search if the request contains the
+   * search string.
+   * 
+   * @param {*} context The HTTP Context
+   */
   async index ({ request }) {
     const pageable = this.getPageable(request)
     const sortable = this.getSortable(request)
@@ -54,6 +78,12 @@ class BaseController {
       await query.fetch()
   }
 
+  /**
+   * Gets a single entity with the given id form the
+   * database. Returns 404 if the entity was not found.
+   * 
+   * @param {*} context The HTTP Context 
+   */
   async show ({ params }) {
     const entity = await this.model.find(params.id)
 
@@ -64,6 +94,14 @@ class BaseController {
     return entity
   }
 
+  /**
+   * Saves an entity in the database.
+   * Validates its fields, if validation throws 
+   * an error shows the fields with validation problems. 
+   * Otherwise returns the newly created entity.
+   * 
+   * @param {*} context The HTTP Context 
+   */
   async store ({ request }) {
     const entity = request.post()
     const validation = await this.validate(entity)
@@ -75,6 +113,15 @@ class BaseController {
     return await this.model.create(entity)
   }
 
+  /**
+   * Updates an entity with the given id.
+   * If the id is not found in the database, returns 404.
+   * Otherwise tries to validate the updated fields,
+   * if validation fails, returns the validation errors,
+   * otherwise returns the updated entity.
+   * 
+   * @param {*} context The HTTP Context
+   */
   async update ({ params, request }) {
     const entityInfo = request.except(this.onUpdateIgnoredFields)
     const validation = await this.validate(entityInfo)
@@ -93,6 +140,13 @@ class BaseController {
     return entity
   }
 
+  /**
+   * Deletes an entity with the given id.
+   * If the entity was not found, returns 404.
+   * Otherwise removes the entity and returns no content.
+   * 
+   * @param {*} context The HTTP Context 
+   */
   async destroy ({ response, params }) {
     const entity = await this.model.find(params.id)
 
