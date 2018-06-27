@@ -15,6 +15,45 @@
 
 const Route = use('Route')
 
-Route.get('/', ({ request }) => {
-  return { greeting: 'Hello world in JSON' }
-})
+const withApiPrefix = group => {
+  group.prefix('api')
+  return group
+}
+
+const withJson = group => {
+  group.formats(['json'])
+  return group
+}
+
+const withGenericSearch = group => {
+  group.middleware(['genericSearch'])
+  return group
+}
+
+const withUserAuthenticated = group => {
+  group.middleware(['auth:jwt', 'userAuthenticated'])
+  return group
+}
+
+withApiPrefix(
+  withJson(
+    Route.group(() => {
+      Route.post('register', 'AuthenticationController.register')
+      Route.post('login', 'AuthenticationController.login')
+    })
+  )
+)
+
+withApiPrefix(
+  withJson(
+    withUserAuthenticated(
+      Route.group(() => {
+        Route.get('users', 'UserController.index')
+        Route.get('users', 'UserController.show')
+        Route.put('users', 'UserController.update')
+
+        Route.get('logout', 'AuthenticationController.logout')
+      })
+    )
+  )
+)
