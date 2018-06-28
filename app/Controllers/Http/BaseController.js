@@ -1,8 +1,6 @@
 'use strict'
 
 const ResourceNotFoundException = use('App/Exceptions/ResourceNotFoundException')
-const ValidationException = use('App/Exceptions/ValidationException')
-const { validateAll } = use('Validator')
 
 class BaseController {
 
@@ -13,15 +11,6 @@ class BaseController {
     this.relations = options.relations || []
     this.possibleSortDirections = ['asc', 'desc']
     this.defaultSort = { sort: 'id' , direction: 'asc' }
-  }
-  
-  /**
-   * Validates an entity against the current rules.
-   * 
-   * @param {*} entity Entity to be validated
-   */
-  async validate (entity) {
-    return await validateAll(entity, this.rules)
   }
 
   /**
@@ -96,19 +85,12 @@ class BaseController {
 
   /**
    * Saves an entity in the database.
-   * Validates its fields, if validation throws 
-   * an error shows the fields with validation problems. 
-   * Otherwise returns the newly created entity.
+   * Returns the newly created entity.
    * 
    * @param {*} context The HTTP Context 
    */
   async store ({ request }) {
     const entity = request.post()
-    const validation = await this.validate(entity)
-
-    if (validation.fails()) {
-      throw new ValidationException(validation.messages())
-    }
 
     return await this.model.create(entity)
   }
@@ -116,23 +98,16 @@ class BaseController {
   /**
    * Updates an entity with the given id.
    * If the id is not found in the database, returns 404.
-   * Otherwise tries to validate the updated fields,
-   * if validation fails, returns the validation errors,
-   * otherwise returns the updated entity.
+   * Otherwise returns the updated entity.
    * 
    * @param {*} context The HTTP Context
    */
   async update ({ params, request }) {
     const entityInfo = request.except(this.onUpdateIgnoredFields)
-    const validation = await this.validate(entityInfo)
     const entity = await this.model.find(params.id)
 
     if (!entity) {
       throw new ResourceNotFoundException()
-    }
-
-    if (validation.fails()) {
-      throw new ValidationException(validation.messages())
     }
 
     entity.merge(entityInfo)

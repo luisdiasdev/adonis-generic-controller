@@ -35,25 +35,23 @@ const withUserAuthenticated = group => {
   return group
 }
 
-withApiPrefix(
-  withJson(
-    Route.group(() => {
-      Route.post('register', 'AuthenticationController.register')
-      Route.post('login', 'AuthenticationController.login')
-    })
-  )
+const apiWithJson = group => withApiPrefix(withJson(group))
+const genericSearchAndUserAuthenticated = group => withGenericSearch(withUserAuthenticated(group))
+
+apiWithJson(
+  Route.group(() => {
+    Route.post('register', 'AuthenticationController.register').validator('UserValidator')
+    Route.post('login', 'AuthenticationController.login')
+  })
 )
 
-withApiPrefix(
-  withJson(
-    withUserAuthenticated(
-      Route.group(() => {
-        Route.get('users', 'UserController.index')
-        Route.get('users', 'UserController.show')
-        Route.put('users', 'UserController.update')
+apiWithJson(
+genericSearchAndUserAuthenticated(
+  Route.group(() => {
+    Route.get('users', 'UserController.index')
+    Route.get('users', 'UserController.show')
+    Route.put('users', 'UserController.update').validator('UserValidator')
 
-        Route.get('logout', 'AuthenticationController.logout')
-      })
-    )
-  )
-)
+    Route.get('logout', 'AuthenticationController.logout')
+  })
+))
