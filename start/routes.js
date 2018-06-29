@@ -41,7 +41,7 @@ const genericSearchAndUserAuthenticated = group => withGenericSearch(withUserAut
 apiWithJson(
   Route.group(() => {
     Route.post('register', 'AuthenticationController.register').validator('UserValidator')
-    Route.post('login', 'AuthenticationController.login')
+    Route.post('login', 'AuthenticationController.login').validator('UserValidator')
   })
 )
 

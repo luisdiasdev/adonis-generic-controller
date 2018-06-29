@@ -6,7 +6,6 @@ class BaseController {
 
   constructor (model, options) {
     this.model = model
-    this.rules = options.rules || {}
     this.onUpdateIgnoredFields = options.onUpdateIgnoredFields || []
     this.relations = options.relations || []
     this.possibleSortDirections = ['asc', 'desc']
